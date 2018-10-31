@@ -12,6 +12,7 @@
   "author": "Alex Henry",
   "license": "ISC",
   "dependencies": {
+    "firebase-admin": "^6.1.0",
     "node-fetch": "^2.2.0",
     "tslint": "^5.11.0"
   },

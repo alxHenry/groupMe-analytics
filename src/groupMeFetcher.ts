@@ -11,6 +11,7 @@ export interface Message {
   favoritedBy: string[];
   name: string;
   senderId: string;
+  groupId: string;
   text: string;
 }
 
@@ -47,6 +48,7 @@ const transformRawMessage = (rawMessage: RawMessage): Message => ({
   favoritedBy: rawMessage.favorited_by,
   name: rawMessage.name,
   senderId: rawMessage.sender_id,
+  groupId: rawMessage.group_id,
   text: rawMessage.text,
 });
 
@@ -83,7 +85,7 @@ export const fetchAllGroupMessages = async (groupId: string): Promise<Message[]>
   while (true) {
     let newMessages: Message[];
     try {
-      newMessages = await fetchGroupMessages(groupId, 20, lastMessageId);
+      newMessages = await fetchGroupMessages(groupId, 100, lastMessageId);
     } catch (err) {
       console.log(`Failed to fetch messages: ${err}`);
       return [];
