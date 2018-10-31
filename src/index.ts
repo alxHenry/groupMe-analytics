@@ -1,11 +1,15 @@
-import { saveGroupMessages, getGroupMessages } from './dbHelper';
+import { getGroupMessages, saveGroupMessages } from './dbHelper';
 import { fetchAllGroupMessages } from './groupMeFetcher';
 
+const groupId = '45622290';
+
 const start = async () => {
-  // const messages = await fetchAllGroupMessages('45622290');
-  // saveGroupMessages(messages);
-  const messages = await getGroupMessages('45622290');
-  console.log(messages.length);
+  let messages = await getGroupMessages(groupId);
+
+  if (!messages.length) {
+    messages = await fetchAllGroupMessages(groupId);
+    saveGroupMessages(messages);
+  }
 };
 
 start();

@@ -4,7 +4,13 @@ import { Message } from './groupMeFetcher';
 export const getGroupMessages = async (groupId: string): Promise<Message[]> => {
   const groupRef = db.collection('groups').doc(groupId);
   const groupDoc = await groupRef.get();
-  return groupDoc.data().messages;
+
+  const data = groupDoc.data();
+  if (!data) {
+    return [];
+  }
+
+  return data.messages;
 };
 
 export const saveGroupMessages = (messages: Message[]) => {
