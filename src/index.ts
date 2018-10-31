@@ -10,6 +10,8 @@ const start = async () => {
     messages = await fetchAllGroupMessages(groupId);
     saveGroupMessages(messages);
   }
+
+  console.log(messages);
 };
 
 start();
