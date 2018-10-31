@@ -1,0 +1,22 @@
+{
+  "name": "groupme-analytics-scraper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/src",
+    "debug": "node --inspect-brk dist/src",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alex Henry",
+  "license": "ISC",
+  "dependencies": {
+    "node-fetch": "^2.2.0",
+    "tslint": "^5.11.0"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.1.2",
+    "tslint-config-prettier": "^1.15.0"
+  }
+}
