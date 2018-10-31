@@ -50,26 +50,50 @@ const transformRawMessage = (rawMessage: RawMessage): Message => ({
   text: rawMessage.text,
 });
 
-export const fetchMessages = async (groupId: string, beforeMessageId?: string): Promise<Message[]> => {
-  let payload: RawResponse;
-  try {
-    const response = await fetch(`${groupMeBaseUrl}/groups/${groupId}/messages?limit=20&token=${accessToken}`);
-    payload = await response.json();
-  } catch (err) {
-    console.log(`Error fetching messages: ${err}`);
+const fetchGroupMessages = async (
+  groupId: string,
+  amountToFetch: number,
+  beforeMessageId?: string
+): Promise<Message[]> => {
+  let url = `${groupMeBaseUrl}/groups/${groupId}/messages?limit=${amountToFetch}&token=${accessToken}`;
+  url = beforeMessageId ? `${url}&before_id=${beforeMessageId}` : url;
+
+  const response = await fetch(url);
+  if (response.status === 304) {
+    // There are no more messages to fetch from the group
     return [];
+  }
+  if (!response.ok) {
+    throw 'Error fetching messages';
   }
 
-  if (!payload.response || !payload.response.messages || !payload.response.messages.length) {
-    return [];
-  }
+  const payload: RawResponse = await response.json();
 
   if (payload.meta.errors) {
-    payload.meta.errors.map(err => {
-      console.log(`Error getting messages: ${err}`);
-    });
-    return [];
+    throw `Error getting messages: ${payload.meta.errors}`;
   }
 
   return payload.response.messages.map(transformRawMessage);
+};
+
+export const fetchAllGroupMessages = async (groupId: string): Promise<Message[]> => {
+  let fulfilledMessages: Message[] = [];
+  let lastMessageId = '';
+
+  while (true) {
+    let newMessages: Message[];
+    try {
+      newMessages = await fetchGroupMessages(groupId, 20, lastMessageId);
+    } catch (err) {
+      console.log(`Failed to fetch messages: ${err}`);
+      return [];
+    }
+    fulfilledMessages = [...fulfilledMessages, ...newMessages];
+
+    if (newMessages.length === 0) {
+      return fulfilledMessages;
+    }
+
+    lastMessageId = newMessages[newMessages.length - 1].id;
+  }
 };

@@ -1,7 +1,8 @@
-import { fetchMessages } from './groupMeFetcher';
+import { fetchAllGroupMessages } from './groupMeFetcher';
 
 const start = async () => {
-  const messages = await fetchMessages('45622290');
+  const messages = await fetchAllGroupMessages('45622290');
+  console.log(`Messages has length: ${messages.length}`);
   console.log(messages);
 };
 
