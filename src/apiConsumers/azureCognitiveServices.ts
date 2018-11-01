@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import acsApiKeys from '../../azure-credentials';
+import { acsApiKeys } from '../../azure-credentials';
 import { Message } from './groupMeFetcher';
 
 const apiUrl = 'https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment';

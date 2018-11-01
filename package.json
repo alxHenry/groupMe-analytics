@@ -12,11 +12,12 @@
   "author": "Alex Henry",
   "license": "ISC",
   "dependencies": {
-    "firebase-admin": "^6.1.0",
+    "mongodb": "^3.1.8",
     "node-fetch": "^2.2.0",
     "tslint": "^5.11.0"
   },
   "devDependencies": {
+    "@types/mongodb": "^3.1.14",
     "@types/node-fetch": "^2.1.2",
     "tslint-config-prettier": "^1.15.0"
   }
