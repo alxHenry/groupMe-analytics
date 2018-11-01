@@ -4,6 +4,10 @@ export interface MessagesByUserMap {
   [userId: string]: Message[];
 }
 
+export interface UserIdToNameMap {
+  [userId: string]: string;
+}
+
 export const getMessagesByUserMap = (messages: Message[]): MessagesByUserMap => {
   const messagesByUsers: MessagesByUserMap = {};
 
@@ -19,4 +23,20 @@ export const getMessagesByUserMap = (messages: Message[]): MessagesByUserMap => 
   });
 
   return messagesByUsers;
+};
+
+export const getUserIdToNameMap = (messageByUserMap: MessagesByUserMap): UserIdToNameMap => {
+  const userIdToNameMap: UserIdToNameMap = {};
+
+  Object.keys(messageByUserMap).forEach(userId => {
+    const messagesByUser = messageByUserMap[userId];
+    if (!messagesByUser.length) {
+      return userId;
+    }
+
+    const firstMessageName = messagesByUser[0].name;
+    userIdToNameMap[userId] = firstMessageName;
+  });
+
+  return userIdToNameMap;
 };

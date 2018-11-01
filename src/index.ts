@@ -1,7 +1,7 @@
 import { getMessagesAverageSentiment } from './apiConsumers/azureCognitiveServices';
 import { fetchAllGroupMessages } from './apiConsumers/groupMeFetcher';
 import { getGroupMessages, saveGroupMessages } from './dbHelper';
-import { getMessagesByUserMap } from './messages/utils';
+import { getMessagesByUserMap, getUserIdToNameMap } from './messages/utils';
 
 const groupId = '45622290';
 
@@ -14,6 +14,7 @@ const start = async () => {
   }
 
   const messagesByUserMap = getMessagesByUserMap(messages);
+  const userIdToNameMap = getUserIdToNameMap(messagesByUserMap);
   const sentimentsByUserMap: { [userId: string]: number } = {};
 
   const acsPromises: Promise<number>[] = [];
@@ -28,7 +29,11 @@ const start = async () => {
     const correspondingUserId = messagesByUserKeys[index];
     sentimentsByUserMap[correspondingUserId] = value;
 
-    console.log(`Average sentiment for user ${correspondingUserId} is ${sentimentsByUserMap[correspondingUserId]}`);
+    console.log(
+      `Average sentiment for user ${userIdToNameMap[correspondingUserId]} is ${
+        sentimentsByUserMap[correspondingUserId]
+      }`
+    );
   });
 };
 
