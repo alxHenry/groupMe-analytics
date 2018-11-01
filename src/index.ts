@@ -16,9 +16,19 @@ const start = async () => {
   const messagesByUserMap = getMessagesByUserMap(messages);
   const sentimentsByUserMap: { [userId: string]: number } = {};
 
-  Object.keys(messagesByUserMap).forEach(async userId => {
-    sentimentsByUserMap[userId] = await getMessagesAverageSentiment(messagesByUserMap[userId]);
-    console.log(`Average sentiment for user ${userId} is ${sentimentsByUserMap[userId]}`);
+  const acsPromises: Promise<number>[] = [];
+  Object.keys(messagesByUserMap).forEach(userId => {
+    acsPromises.push(getMessagesAverageSentiment(messagesByUserMap[userId]));
+  });
+
+  const messagesByUserKeys = Object.keys(messagesByUserMap);
+  const sentimentValues = await Promise.all(acsPromises);
+
+  sentimentValues.forEach((value, index) => {
+    const correspondingUserId = messagesByUserKeys[index];
+    sentimentsByUserMap[correspondingUserId] = value;
+
+    console.log(`Average sentiment for user ${correspondingUserId} is ${sentimentsByUserMap[correspondingUserId]}`);
   });
 };
 
