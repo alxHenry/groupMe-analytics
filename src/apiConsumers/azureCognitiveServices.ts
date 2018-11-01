@@ -63,7 +63,6 @@ export const getMessagesAverageSentiment = async (messages: Message[]): Promise<
     apiPromises.push(getMessagesSentiment(chunk));
   });
 
-  console.log(`Azure cognitive services calls made: ${apiPromises.length}`);
   const countSumTuples = await Promise.all(apiPromises);
 
   let totalSum = 0;

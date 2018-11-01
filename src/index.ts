@@ -30,7 +30,8 @@ const start = async () => {
 
   const acsPromises: Promise<number>[] = [];
   Object.keys(messagesByUserMap).forEach(userId => {
-    // acsPromises.push(getMessagesAverageSentiment(messagesByUserMap[userId]));
+    const usersLast1000Messages = messagesByUserMap[userId].slice(0, 1000);
+    acsPromises.push(getMessagesAverageSentiment(usersLast1000Messages));
 
     console.log(`User ${userIdToNameMap[userId]} has sent ${messagesByUserMap[userId].length}`);
   });
