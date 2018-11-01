@@ -5,7 +5,7 @@ import { chunkMessages } from '../messages/utils';
 import { promises } from 'fs';
 
 const apiUrl = 'https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment';
-const sentimentChunkSize = 500;
+const sentimentChunkSize = 1000;
 
 interface AzureCognitiveServicesDocument {
   id: string;
@@ -42,7 +42,7 @@ export const getMessagesSentiment = async (messages: Message[]): Promise<CountSu
   });
 
   if (!response.ok) {
-    throw new Error('ACS response is not ok');
+    throw new Error(`ACS response is not ok. Status: ${response.status}: ${response.statusText}`);
   }
 
   const payload: ACSSentimentResponse = await response.json();
@@ -63,6 +63,7 @@ export const getMessagesAverageSentiment = async (messages: Message[]): Promise<
     apiPromises.push(getMessagesSentiment(chunk));
   });
 
+  console.log(`Azure cognitive services calls made: ${apiPromises.length}`);
   const countSumTuples = await Promise.all(apiPromises);
 
   let totalSum = 0;

@@ -1,13 +1,18 @@
 import { getMessagesAverageSentiment } from './apiConsumers/azureCognitiveServices';
 import { fetchAllGroupMessages } from './apiConsumers/groupMeFetcher';
 import { getGroupMessages, saveGroupMessages } from './dbHelper';
-import { getMessagesByUserMap, getUserIdToNameMap } from './messages/utils';
+import { getMessagesByUserMap, getUserIdToNameMap, readGroupMessagesFromFile } from './messages/utils';
 import db, { shutdownDB } from './database';
 
-const groupId = '13207297'; // '45622290' '9817284';
+const groupId = '9817284'; // '13207297' '45622290' '9817284';
 
 const start = async () => {
-  let messages = await getGroupMessages(groupId);
+  // Prefer a json input if available
+  let messages = readGroupMessagesFromFile(groupId);
+
+  if (!messages.length) {
+    messages = await getGroupMessages(groupId);
+  }
 
   if (!messages.length) {
     messages = await fetchAllGroupMessages(groupId);
@@ -25,7 +30,9 @@ const start = async () => {
 
   const acsPromises: Promise<number>[] = [];
   Object.keys(messagesByUserMap).forEach(userId => {
-    acsPromises.push(getMessagesAverageSentiment(messagesByUserMap[userId]));
+    // acsPromises.push(getMessagesAverageSentiment(messagesByUserMap[userId]));
+
+    console.log(`User ${userIdToNameMap[userId]} has sent ${messagesByUserMap[userId].length}`);
   });
 
   const messagesByUserKeys = Object.keys(messagesByUserMap);

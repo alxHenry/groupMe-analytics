@@ -1,4 +1,5 @@
 import { Message } from '../apiConsumers/groupMeFetcher';
+import * as fs from 'fs';
 
 export interface MessagesByUserMap {
   [userId: string]: Message[];
@@ -49,4 +50,12 @@ export const chunkMessages = (messages: Message[], chunkSize: number): Message[]
   }
 
   return chunks;
+};
+
+export const readGroupMessagesFromFile = (groupId: string) => {
+  try {
+    return JSON.parse(fs.readFileSync(`${groupId}.json`, 'utf8'));
+  } catch (err) {
+    return [];
+  }
 };
