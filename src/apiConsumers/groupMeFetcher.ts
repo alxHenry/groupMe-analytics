@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { accessToken } from '../groupme-credentials';
+import { accessToken } from '../../groupme-credentials';
 
 const groupMeBaseUrl = 'https://api.groupme.com/v3';
 

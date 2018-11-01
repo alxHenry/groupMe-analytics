@@ -1,5 +1,5 @@
 import db from './database';
-import { Message } from './groupMeFetcher';
+import { Message } from './apiConsumers/groupMeFetcher';
 
 export const getGroupMessages = async (groupId: string): Promise<Message[]> => {
   const groupRef = db.collection('groups').doc(groupId);
