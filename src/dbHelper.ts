@@ -1,8 +1,9 @@
 import db from './database';
 import { UpdateWriteOpResult } from 'mongodb';
 import { Message } from './apiConsumers/groupMeFetcher';
+import { chunkMessages } from './messages/utils';
 
-const chunkSize = 500;
+const dbChunkSize = 500;
 
 export const getGroupMessages = async (groupId: string): Promise<Message[]> => {
   const groupCollection = (await db).collection('groups');
@@ -23,7 +24,7 @@ export const saveGroupMessages = async (messages: Message[]) => {
   }
 
   const groupId = messages[0].groupId;
-  const messageChunks = chunkMessages(messages);
+  const messageChunks = chunkMessages(messages, dbChunkSize);
   const writePromises: Promise<UpdateWriteOpResult>[] = [];
 
   messageChunks.forEach(async chunk => {
@@ -44,14 +45,4 @@ export const saveGroupMessages = async (messages: Message[]) => {
   });
 
   return Promise.all(writePromises);
-};
-
-const chunkMessages = (messages: Message[]) => {
-  const chunks: Message[][] = [];
-
-  while (messages.length > 0) {
-    chunks.push(messages.splice(0, chunkSize));
-  }
-
-  return chunks;
 };

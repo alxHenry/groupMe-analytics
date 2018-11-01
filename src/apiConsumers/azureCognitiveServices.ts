@@ -1,8 +1,11 @@
 import fetch from 'node-fetch';
 import { acsApiKeys } from '../../azure-credentials';
 import { Message } from './groupMeFetcher';
+import { chunkMessages } from '../messages/utils';
+import { promises } from 'fs';
 
 const apiUrl = 'https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment';
+const sentimentChunkSize = 500;
 
 interface AzureCognitiveServicesDocument {
   id: string;
@@ -19,37 +22,57 @@ interface ACSSentimentDocumentResponse {
   score: number;
 }
 
-export const getMessagesAverageSentiment = async (messages: Message[]): Promise<number> => {
+interface CountSumTuple {
+  count: number;
+  sum: number;
+}
+
+export const getMessagesSentiment = async (messages: Message[]): Promise<CountSumTuple> => {
   const body = {
     documents: messages.map(convertMessageToAcsDocument),
   };
 
-  let payload: ACSSentimentResponse;
-  try {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Ocp-Apim-Subscription-Key': acsApiKeys.apiKey,
-      },
-    });
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Ocp-Apim-Subscription-Key': acsApiKeys.apiKey,
+    },
+  });
 
-    if (!response.ok) {
-      throw new Error('ACS response is not ok');
-    }
-
-    payload = await response.json();
-  } catch (err) {
-    console.log(`Failure getting text sentiment: ${err}`);
-    return 0.5;
+  if (!response.ok) {
+    throw new Error('ACS response is not ok');
   }
 
+  const payload: ACSSentimentResponse = await response.json();
   const documents = payload.documents;
   const sum = documents.reduce((acc, document) => acc + document.score, 0);
-  const avg = sum / documents.length;
 
-  return avg;
+  return {
+    sum,
+    count: documents.length,
+  };
+};
+
+export const getMessagesAverageSentiment = async (messages: Message[]): Promise<number> => {
+  const messageChunks = chunkMessages(messages, sentimentChunkSize);
+  const apiPromises: Promise<CountSumTuple>[] = [];
+
+  messageChunks.forEach(chunk => {
+    apiPromises.push(getMessagesSentiment(chunk));
+  });
+
+  const countSumTuples = await Promise.all(apiPromises);
+
+  let totalSum = 0;
+  let totalCount = 0;
+  countSumTuples.forEach(countSumTuple => {
+    totalSum += countSumTuple.sum;
+    totalCount += countSumTuple.count;
+  });
+
+  return totalSum / totalCount;
 };
 
 const convertMessageToAcsDocument = (message: Message): AzureCognitiveServicesDocument => ({

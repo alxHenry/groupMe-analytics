@@ -40,3 +40,13 @@ export const getUserIdToNameMap = (messageByUserMap: MessagesByUserMap): UserIdT
 
   return userIdToNameMap;
 };
+
+export const chunkMessages = (messages: Message[], chunkSize: number): Message[][] => {
+  const chunks: Message[][] = [];
+
+  while (messages.length > 0) {
+    chunks.push(messages.splice(0, chunkSize));
+  }
+
+  return chunks;
+};

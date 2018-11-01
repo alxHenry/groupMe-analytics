@@ -15,30 +15,32 @@ const start = async () => {
 
     await saveGroupMessages(messages);
     console.log('Successfully wrote to the db!');
+  } else {
+    console.log(`Found ${messages.length} messages`);
   }
 
-  // const messagesByUserMap = getMessagesByUserMap(messages);
-  // const userIdToNameMap = getUserIdToNameMap(messagesByUserMap);
-  // const sentimentsByUserMap: { [userId: string]: number } = {};
+  const messagesByUserMap = getMessagesByUserMap(messages);
+  const userIdToNameMap = getUserIdToNameMap(messagesByUserMap);
+  const sentimentsByUserMap: { [userId: string]: number } = {};
 
-  // const acsPromises: Promise<number>[] = [];
-  // Object.keys(messagesByUserMap).forEach(userId => {
-  //   acsPromises.push(getMessagesAverageSentiment(messagesByUserMap[userId]));
-  // });
+  const acsPromises: Promise<number>[] = [];
+  Object.keys(messagesByUserMap).forEach(userId => {
+    acsPromises.push(getMessagesAverageSentiment(messagesByUserMap[userId]));
+  });
 
-  // const messagesByUserKeys = Object.keys(messagesByUserMap);
-  // const sentimentValues = await Promise.all(acsPromises);
+  const messagesByUserKeys = Object.keys(messagesByUserMap);
+  const sentimentValues = await Promise.all(acsPromises);
 
-  // sentimentValues.forEach((value, index) => {
-  //   const correspondingUserId = messagesByUserKeys[index];
-  //   sentimentsByUserMap[correspondingUserId] = value;
+  sentimentValues.forEach((value, index) => {
+    const correspondingUserId = messagesByUserKeys[index];
+    sentimentsByUserMap[correspondingUserId] = value;
 
-  //   console.log(
-  //     `Average sentiment for user ${userIdToNameMap[correspondingUserId]} is ${
-  //       sentimentsByUserMap[correspondingUserId]
-  //     }`
-  //   );
-  // });
+    console.log(
+      `Average sentiment for user ${userIdToNameMap[correspondingUserId]} is ${
+        sentimentsByUserMap[correspondingUserId]
+      }`
+    );
+  });
 };
 
 start();
