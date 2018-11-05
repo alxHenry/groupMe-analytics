@@ -1,57 +1,30 @@
-import { getMessagesAverageSentiment } from './apiConsumers/azureCognitiveServices';
-import { fetchAllGroupMessages } from './apiConsumers/groupMeFetcher';
-import { getGroupMessages, saveGroupMessages } from './dbHelper';
-import { getMessagesByUserMap, getUserIdToNameMap, readGroupMessagesFromFile } from './messages/utils';
-import db, { shutdownDB } from './database';
+import * as bodyParser from 'body-parser';
+import * as express from 'express';
+import analyticsRoutes from './api/routes/analyticsRoutes';
+import { shutdownDB } from './database';
 
-const groupId = '9817284'; // '13207297' '45622290' '9817284';
+const app = express();
+const port = process.env.PORT || 8080;
 
-const start = async () => {
-  // Prefer a json input if available
-  let messages = readGroupMessagesFromFile(groupId);
+app.use((_, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 
-  if (!messages.length) {
-    messages = await getGroupMessages(groupId);
-  }
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-  if (!messages.length) {
-    messages = await fetchAllGroupMessages(groupId);
-    console.log(`Completed fetching ${messages.length} messages.`);
+analyticsRoutes(app);
 
-    await saveGroupMessages(messages);
-    console.log('Successfully wrote to the db!');
-  } else {
-    console.log(`Found ${messages.length} messages`);
-  }
+app.listen(port);
 
-  const messagesByUserMap = getMessagesByUserMap(messages);
-  const userIdToNameMap = getUserIdToNameMap(messagesByUserMap);
-  const sentimentsByUserMap: { [userId: string]: number } = {};
+console.log('RESTful API server started on: ' + port);
 
-  const acsPromises: Promise<number>[] = [];
-  Object.keys(messagesByUserMap).forEach(userId => {
-    const usersLast1000Messages = messagesByUserMap[userId].slice(0, 1000);
-    acsPromises.push(getMessagesAverageSentiment(usersLast1000Messages));
-
-    console.log(`User ${userIdToNameMap[userId]} has sent ${messagesByUserMap[userId].length}`);
-  });
-
-  const messagesByUserKeys = Object.keys(messagesByUserMap);
-  const sentimentValues = await Promise.all(acsPromises);
-
-  sentimentValues.forEach((value, index) => {
-    const correspondingUserId = messagesByUserKeys[index];
-    sentimentsByUserMap[correspondingUserId] = value;
-
-    console.log(
-      `Average sentiment for user ${userIdToNameMap[correspondingUserId]} is ${
-        sentimentsByUserMap[correspondingUserId]
-      }`
-    );
-  });
-};
-
-start();
+// More graceful fallback
+app.use((req, res) => {
+  res.status(404).send({ url: req.originalUrl + ' not found' });
+});
 
 process.on('SIGTERM', () => {
   shutdownDB();
